@@ -1,8 +1,11 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
+import { UserModel } from './user-model';
+import { RoleModel } from './role-model';
 
 export interface Auth {
-    user: User;
+    user: UserModel;
+    roles: RoleModel[];
 }
 
 export interface BreadcrumbItem {
@@ -20,6 +23,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    items?: NavItem[];
 }
 
 export interface SharedData {
@@ -27,17 +31,17 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    flash: Flash;
+    appSettings: AppSettings;
     [key: string]: unknown;
 }
 
-export interface User {
-    id: number;
+export interface Flash {
+    success: string | null;
+    error: string | null;
+}
+
+export interface AppSettings {
     name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    two_factor_enabled?: boolean;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    logo: string;
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -44,8 +45,35 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+                'roles' => $request->user()?->roles ?? [],
+            ],
+            'flash' => [
+                'success' => $request->session()->get('success') ?? null,
+                'error' => $request->session()->get('error') ?? null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'notifications' => $request->user() ? [
+                'latest' => $request->user()->notifications()
+                    ->latest()
+                    ->limit(10)
+                    ->get(['id', 'data', 'read_at', 'created_at'])
+                    ->map(fn ($n) => [
+                        'id' => $n->id,
+                        'data' => [
+                            'title' => data_get($n->data, 'title'),
+                            'body' => data_get($n->data, 'body'),
+                            'action_url' => data_get($n->data, 'action_url'),
+                        ],
+                        'read_at' => $n->read_at,
+                        'created_at' => $n->created_at,
+                    ])
+                    ->toArray(),
+                'unread_count' => $request->user()->unreadNotifications()->count(),
+            ] : ['latest' => [], 'unread_count' => 0],
+            'appSettings' => [
+                'name' => Setting::get('app_name', config('app.name', 'Laravel Starter Kit')),
+                'logo' => Setting::get('app_logo'),
+            ],
         ];
     }
 }

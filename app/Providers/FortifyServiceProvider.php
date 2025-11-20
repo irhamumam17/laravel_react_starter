@@ -79,13 +79,47 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureRateLimiting(): void
     {
         RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
+            $sessionKey = (string) $request->session()->get('login.id');
+            return [
+                Limit::perMinute(5)->by('2fa:session:'.$sessionKey),
+                Limit::perMinute(10)->by('2fa:ip:'.$request->ip()),
+            ];
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $usernameField = Fortify::username();
+            $rawIdentifier = (string) $request->input($usernameField);
+            $identifier = Str::transliterate(Str::lower($rawIdentifier));
+            $ip = $request->ip();
 
-            return Limit::perMinute(5)->by($throttleKey);
+            $tooManyResponse = function () use ($identifier, $ip, $request) {
+                try {
+                    activity()
+                        ->useLog('auth')
+                        ->event('login_lockout')
+                        ->withProperties([
+                            'identifier' => $identifier,
+                            'ip' => $ip,
+                            'user_agent' => (string) $request->userAgent(),
+                        ])
+                        ->log('Login lockout due to too many attempts');
+                } catch (\Throwable $e) {
+                    // ignore logging failures
+                }
+
+                return response()->json([
+                    'message' => 'Too many login attempts. Please try again later.',
+                ], 429);
+            };
+
+            return [
+                // Strict short burst limiter per-identifier+ip
+                Limit::perMinute(5)->by("login:{$identifier}|{$ip}")->response($tooManyResponse),
+                // Per-identifier rolling limiter
+                Limit::perMinute(10)->by("login:{$identifier}")->response($tooManyResponse),
+                // Per-IP limiter
+                Limit::perMinute(30)->by("login:ip:{$ip}")->response($tooManyResponse),
+            ];
         });
     }
 }
