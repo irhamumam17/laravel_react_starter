@@ -217,13 +217,13 @@ Visit `http://localhost:8000` 🎉
 
 ```bash
 # Clone via HTTPS
-git clone https://github.com/yourusername/your-repo-name.git
+git clone https://github.com/irhamumam17/laravel_react_starter.git
 
 # OR clone via SSH
-git clone git@github.com:yourusername/your-repo-name.git
+git clone git@github.com:irhamumam17/laravel_react_starter.git
 
 # Navigate to project directory
-cd your-repo-name
+cd laravel_react_starter
 ```
 
 ### Step 2: Install PHP Dependencies
@@ -819,9 +819,9 @@ Built with these amazing open-source projects:
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/your-repo-name/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/your-repo-name/discussions)
-- **Email**: your-email@example.com
+- **Issues**: [GitHub Issues](https://github.com/irhamumam17/laravel_react_starter/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/irhamumam17/laravel_react_starter/discussions)
+- **Email**: irham.umam36@gmail.com
 
 ---
 
